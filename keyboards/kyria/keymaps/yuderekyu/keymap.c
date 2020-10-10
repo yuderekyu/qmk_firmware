@@ -41,7 +41,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       LT(_RAISE, KC_ESC),       KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_PIPE,
       MT(MOD_LCTL, KC_BSPC),   KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
       KC_LSFT,                 KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_LSFT,   KC_LSFT, KC_LSFT, KC_LSFT, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_MINS,
-      KC_LGUI, KC_DEL, MT(MOD_LALT, KC_ENT), LT(_LOWER, KC_SPC), LT(MOD_LGUI, KC_ENT), LT(_LOWER, KC_ENT), LT(_RAISE, KC_SPC), KC_TAB,  KC_BSPC, KC_RALT
+      KC_LGUI, KC_DEL, MT(MOD_LALT, KC_ENT), LT(_LOWER, KC_SPC), LT(KC_LGUI, KC_LSFT), LT(_LOWER, KC_RSFT), LT(_RAISE, KC_SPC), KC_TAB,  KC_BSPC, KC_RALT
     ),
 /*
  * Lower Layer: Symbols
@@ -125,6 +125,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //     ),
 };
 
+// Rotary encoder variables
+bool is_alt_tab_active = false;
+uint16_t alt_tab_timer = 0;
+
 layer_state_t layer_state_set_user(layer_state_t state) {
     return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
 }
@@ -197,22 +201,36 @@ void oled_task_user(void) {
 }
 #endif
 
+// Release alt if we have not sent a tab key within 1 second.
+void matrix_scan_user(void) {
+    if (is_alt_tab_active) {
+        if (timer_elapsed(alt_tab_timer) > 1250) {
+            unregister_code(KC_LALT);
+            is_alt_tab_active = false;
+        }
+    }
+}
+
 #ifdef ENCODER_ENABLE
 void encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
-        // Volume control
         if (clockwise) {
-            tap_code(KC_VOLU);
+            tap_code16(C(KC_TAB));
         } else {
-            tap_code(KC_VOLD);
+            tap_code16(S(C(KC_TAB)));
         }
     }
     else if (index == 1) {
-        // Page up/Page down
         if (clockwise) {
-            tap_code(KC_PGDN);
+            if (!is_alt_tab_active) {
+                is_alt_tab_active = true;
+                register_code(KC_LALT);
+            }
+            alt_tab_timer = timer_read();
+            tap_code16(KC_TAB);
         } else {
-            tap_code(KC_PGUP);
+            alt_tab_timer = timer_read();
+            tap_code16(S(KC_TAB));
         }
     }
 }

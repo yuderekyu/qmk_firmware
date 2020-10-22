@@ -29,11 +29,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * ,-------------------------------------------.                              ,-------------------------------------------.
  * |GUI/tab|   Q  |   W  |   E  |   R  |   T  |                               |   Y  |   U  |   I  |   O  |   P  |  opt/esc|
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |ctrl/bksp|  A | S    |  D   |   F  |   G  |                               |   H  |   J  |   K  |  L   | ; :  | shift/' "|
+ * |ctrl/bksp|  A | S    |  D   |   F  |   G  |                               |   H  |   J  |   K  |  L   | ; :  | ctrl/' "|
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
  * | shift/del|   Z  |   X  |   C  |   V  |   B  |LShift|LShift|  |LShift|LShift|   N  |   M  | ,  < | . >  | /  ? | rshift |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        | GUI  | capslock| LGui |Space |enter|   |space |enter | bksp | esc |RShift|
+ *                        | ---- |cpslck| LGui |Space|enter|   |space |enter |bksp | del  |----- |
  *                        |      |      | tab | Lower|Raise|   |Lower| Raise|      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
@@ -41,7 +41,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                        MT(MOD_LGUI, KC_TAB),       KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    MT(KC_ROPT, KC_ESC),
                        MT(MOD_LCTL, KC_BSPC),  KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, MT(MOD_RCTL, KC_QUOT),
                        MT(MOD_LSFT, KC_DEL),                 KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_LSFT,   KC_LSFT, KC_LSFT, KC_LSFT, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
-      KC_LCMD, KC_CAPSLOCK, MT(MOD_LGUI, KC_TAB), LT(_LOWER, KC_SPC), LT(_RAISE, KC_ENT), LT(_LOWER, KC_SPC), LT(_RAISE, KC_ENT), KC_BSPC,  KC_ESC, KC_RSFT
+                       _______, KC_CAPSLOCK, MT(MOD_LGUI, KC_TAB), LT(_LOWER, KC_SPC), LT(_RAISE, KC_ENT), LT(_LOWER, KC_SPC), LT(_RAISE, KC_ENT), KC_BSPC,  KC_DEL, _______
     ),
 /*
  * Lower Layer: Symbols
@@ -125,9 +125,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //     ),
 };
 
-// Rotary encoder variables
-bool is_alt_tab_active = false;
-uint16_t alt_tab_timer = 0;
 
 layer_state_t layer_state_set_user(layer_state_t state) {
     return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
@@ -164,7 +161,7 @@ static void render_qmk_logo(void) {
 static void render_status(void) {
     // QMK Logo and version information
     render_qmk_logo();
-    oled_write_P(PSTR("Kyria rev1.0\n\n"), false);
+    oled_write_P(PSTR("\nOwner: Derek Yu\n\n"), false);
 
     // Host Keyboard Layer Status
     oled_write_P(PSTR("Layer: "), false);
@@ -201,36 +198,22 @@ void oled_task_user(void) {
 }
 #endif
 
-// Release alt if we have not sent a tab key within 1 second.
-void matrix_scan_user(void) {
-    if (is_alt_tab_active) {
-        if (timer_elapsed(alt_tab_timer) > 1250) {
-            unregister_code(KC_LALT);
-            is_alt_tab_active = false;
-        }
-    }
-}
-
 #ifdef ENCODER_ENABLE
 void encoder_update_user(uint8_t index, bool clockwise) {
+    // history scrubbing
     if (index == 0) {
         if (clockwise) {
-            tap_code16(C(KC_TAB));
+            tap_code16(C(KC_Y));
         } else {
-            tap_code16(S(C(KC_TAB)));
+            tap_code16(S(C(KC_Z)));
         }
     }
+    // scroll horizontally by word
     else if (index == 1) {
         if (clockwise) {
-            if (!is_alt_tab_active) {
-                is_alt_tab_active = true;
-                register_code(KC_LALT);
-            }
-            alt_tab_timer = timer_read();
-            tap_code16(KC_TAB);
+            tap_code16(KC_RIGHT);
         } else {
-            alt_tab_timer = timer_read();
-            tap_code16(S(KC_TAB));
+            tap_code16(S(KC_LEFT));
         }
     }
 }

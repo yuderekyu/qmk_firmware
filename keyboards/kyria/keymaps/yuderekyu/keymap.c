@@ -27,21 +27,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * Base Layer: QWERTY
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
- * |GUI/tab|   Q  |   W  |   E  |   R  |   T  |                               |   Y  |   U  |   I  |   O  |   P  |  opt/esc|
+ * |shift/tab|   Q  |   W  |   E  |   R  |   T  |                               |   Y  |   U  |   I  |   O  |   P  |  opt/esc|
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * |ctrl/bksp|  A | S    |  D   |   F  |   G  |                               |   H  |   J  |   K  |  L   | ; :  | ctrl/' "|
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | shift/del|   Z  |   X  |   C  |   V  |   B  |LShift|LShift|  |LShift|LShift|   N  |   M  | ,  < | . >  | /  ? | rshift |
+ * | /del|   Z  |   X  |   C  |   V  |   B  |LShift|LShift|  |LShift|LShift|   N  |   M  | ,  < | . >  | /  ? | rshift |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        | ---- |cpslck| LGui |Space|enter|   |space |enter |bksp | del  |----- |
- *                        |      |      | tab | Lower|Raise|   |Lower| Raise|      |      |      |
+ *                        | ---- |cpslck|tab  |Space|enter|    |space |enter |bksp | del  |----- |
+ *                        |      |      |gui  | Lower|Raise|   |Lower| Raise|shift|      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
     [_QWERTY] = LAYOUT(
-                       MT(MOD_LGUI, KC_TAB),       KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    MT(KC_ROPT, KC_ESC),
+                       MT(MOD_LSFT, KC_TAB),       KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    MT(KC_ROPT, KC_ESC),
                        MT(MOD_LCTL, KC_BSPC),  KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, MT(MOD_RCTL, KC_QUOT),
                        MT(MOD_LSFT, KC_DEL),                 KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_LSFT,   KC_LSFT, KC_LSFT, KC_LSFT, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
-                       _______, KC_CAPSLOCK, MT(MOD_LGUI, KC_TAB), LT(_LOWER, KC_SPC), LT(_RAISE, KC_ENT), LT(_LOWER, KC_SPC), LT(_RAISE, KC_ENT), KC_BSPC,  KC_DEL, _______
+                       _______, KC_CAPSLOCK, MT(MOD_LGUI, KC_TAB), LT(_LOWER, KC_SPC), LT(_RAISE, KC_ENT), LT(_LOWER, KC_SPC), LT(_RAISE, KC_ENT), MT(MOD_RSFT, KC_BSPC),  KC_DEL, _______
     ),
 /*
  * Lower Layer: Symbols
@@ -161,32 +161,30 @@ static void render_qmk_logo(void) {
 static void render_status(void) {
     // QMK Logo and version information
     render_qmk_logo();
-    oled_write_P(PSTR("\nOwner: Derek Yu\n\n"), false);
 
     // Host Keyboard Layer Status
-    oled_write_P(PSTR("Layer: "), false);
+    oled_write_P(PSTR("\nLayer: "), false);
     switch (get_highest_layer(layer_state)) {
         case _QWERTY:
-            oled_write_P(PSTR("Default\n"), false);
+            oled_write_P(PSTR("Default"), false);
             break;
         case _LOWER:
-            oled_write_P(PSTR("Lower\n"), false);
+            oled_write_P(PSTR("Lower"), false);
             break;
         case _RAISE:
-            oled_write_P(PSTR("Raise\n"), false);
+            oled_write_P(PSTR("Raise"), false);
             break;
         case _ADJUST:
-            oled_write_P(PSTR("Adjust\n"), false);
+            oled_write_P(PSTR("Adjust"), false);
             break;
         default:
-            oled_write_P(PSTR("Undefined\n"), false);
+            oled_write_P(PSTR("Undefined"), false);
     }
 
+    oled_write_P(PSTR("\n\nCLock: "), false);
     // Host Keyboard LED Status
     uint8_t led_usb_state = host_keyboard_leds();
-    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_NUM_LOCK) ? PSTR("NUMLCK ") : PSTR("       "), false);
-    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_CAPS_LOCK) ? PSTR("CAPLCK ") : PSTR("       "), false);
-    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_SCROLL_LOCK) ? PSTR("SCRLCK ") : PSTR("       "), false);
+    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_CAPS_LOCK) ? PSTR("On ") : PSTR("Off"), false);
 }
 
 void oled_task_user(void) {

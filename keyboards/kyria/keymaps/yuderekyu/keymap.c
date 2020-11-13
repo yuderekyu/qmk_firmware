@@ -198,20 +198,20 @@ void oled_task_user(void) {
 
 #ifdef ENCODER_ENABLE
 void encoder_update_user(uint8_t index, bool clockwise) {
-    // history scrubbing
+    // switch apps on current desktop
     if (index == 0) {
         if (clockwise) {
-            tap_code16(C(KC_Y));
+            tap_code16(C(KC_RIGHT));
         } else {
-            tap_code16(S(C(KC_Z)));
+            tap_code16(C(KC_LEFT));
         }
     }
     // scroll horizontally by word
     else if (index == 1) {
         if (clockwise) {
-            tap_code16(KC_RIGHT);
+            tap_code16(RGUI(KC_LEFT));
         } else {
-            tap_code16(S(KC_LEFT));
+            tap_code16(RGUI(KC_RIGHT));
         }
     }
 }

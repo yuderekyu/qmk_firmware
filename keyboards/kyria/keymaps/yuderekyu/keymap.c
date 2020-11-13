@@ -201,9 +201,9 @@ void encoder_update_user(uint8_t index, bool clockwise) {
     // switch apps on current desktop
     if (index == 0) {
         if (clockwise) {
-            tap_code16(C(KC_RIGHT));
-        } else {
             tap_code16(C(KC_LEFT));
+        } else {
+            tap_code16(C(KC_RIGHT));
         }
     }
     // scroll horizontally by word

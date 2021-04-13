@@ -209,9 +209,9 @@ void encoder_update_user(uint8_t index, bool clockwise) {
     // scroll horizontally by word
     else if (index == 1) {
         if (clockwise) {
-            tap_code16(RGUI(KC_LEFT));
+            tap_code16(KC_PGDN);
         } else {
-            tap_code16(RGUI(KC_RIGHT));
+            tap_code16(KC_PGUP);
         }
     }
 }
